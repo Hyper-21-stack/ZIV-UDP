@@ -1,7 +1,9 @@
 #!/bin/bash
 GITHUB_USER="Hyper-21-stack"
-GITHUB_REPO="zivpn-setup"
-GITHUB_URL="https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/main"
+GITHUB_REPO="ZIV-UDP"
+RELEASE_TAG="v1.0.0"
+FILE_NAME="zi-amd"
+GITHUB_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/download/$RELEASE_TAG/$FILE_NAME"
 
 is_number() {
     [[ $1 =~ ^[0-9]+$ ]]
@@ -46,11 +48,11 @@ case $selected_option in
         mkdir zv
         cd zv
 
-        udp_script="/root/zv/ziv-linux-amd64"
+        udp_script="/root/zv/$FILE_NAME"
         if [ ! -e "$udp_script" ]; then
-            wget "$GITHUB_URL/ziv-linux-amd64" -O ziv-linux-amd64
+            wget "$GITHUB_URL" -O "$FILE_NAME"
         fi
-        chmod 755 ziv-linux-amd64
+        chmod 755 "$FILE_NAME"
 
         openssl ecparam -genkey -name prime256v1 -out ca.key
         openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj "/CN=bing.com"
@@ -116,7 +118,7 @@ After=network.target nss-lookup.target
 [Service]
 User=root
 WorkingDirectory=/root
-ExecStart=/root/zv/ziv-linux-amd64 server -c /root/zv/config.json
+ExecStart=/root/zv/$FILE_NAME server -c /root/zv/config.json
 Restart=always
 RestartSec=2
 
@@ -130,27 +132,6 @@ EOF
         echo -e "$YELLOW"
         echo "💚 UDP HYSTERIA INSTALLED SUCCESSFULLY 💚"
         echo -e "$NC"
-        exit 0
-        ;;
-    2)
-        echo ""
-        echo -e "\033[1;33mActive auth: \033[1;36m($(awk -F, 'NR==1 { print }' /root/zv/authusers | sed "s/\"/ /g" | sed "s/,/ /g"))\033[0m"
-        rm -rf /root/zv/authusers
-        echo -e "\033[1;32mMultiple Auth (ex: a,b,c)\033[0m"
-        echo -e "$YELLOW"
-        read -p "Auth Str : " input_config
-        echo -e "$NC"
-        echo "$input_config" > /root/zv/authusers
-        systemctl restart ziv-server.service
-        exit 0
-        ;;
-    3)
-        echo ""
-        echo -e "\033[1;32mActive Auth/Users:\033[0m"
-        echo ""
-        echo -e "\033[1;33m$(awk -F, 'NR==1 { print }' /root/zv/authusers | sed "s/\"/  /g" | sed "s/,/  /g")\033[0m"
-        echo ""
-        read -p "Press any key to exit ↩︎" key
         exit 0
         ;;
     *)
